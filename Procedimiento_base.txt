@@ -1,0 +1,15 @@
+
+[DEPENDENCIAS A NIVEL DE PROYECTOS]
+* API -> Agrega a los proyectos CORE e INFRASTRUCTURE
+*INFRASTRUCTURE -> Agrega al proyecto CORE
+
+- En el proyecto INFRASTRUCTURE instalar:
+EF - SQL SERVER 3.1.3
+EF - TOOLS 3.1.3
+
+- en api:
+EF DESIGN
+
+[API, INFRASTRUCTURE]
+- En el proyecto API instalar automapper inyection dependency versión 7.0.0
+
