@@ -1,5 +1,6 @@
 ﻿
 using ArandaSoftTest.CORE.Entities;
+using ArandaSoftTest.CORE.QueryFilters;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +10,8 @@ namespace ArandaSoftTest.CORE.Interfaces
 {
     public interface IProductRepository
     {
-        Task<IEnumerable<Product>> GetProducts();
+        Task<IEnumerable<Product>> GetProducts(ProductQueryFilter filters);
+        Task<IEnumerable<Category>> GetCategories();
         Task<Product> GetProductById(int id);
         Task<IEnumerable<Product>> GetProductByName(string name);
         Task<IEnumerable<Product>> GetProductByDescription(string description);

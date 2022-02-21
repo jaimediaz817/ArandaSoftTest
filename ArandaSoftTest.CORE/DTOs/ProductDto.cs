@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ArandaSoftTest.CORE.Entities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -12,5 +13,7 @@ namespace ArandaSoftTest.CORE.DTOs
         public string Description { get; set; }
         public string Image { get; set; }
         public int? CategoryId { get; set; }
+
+        public Category category { get; set; }
     }
 }

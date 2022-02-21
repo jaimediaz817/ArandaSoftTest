@@ -16,8 +16,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 
 namespace ArandaSoftTest.API
 {
@@ -33,6 +35,11 @@ namespace ArandaSoftTest.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // ENABLE CORS
+            services.AddCors(c => {
+                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+            });
+
             // TODO: Configuración del autoMapper
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -57,6 +64,12 @@ namespace ArandaSoftTest.API
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IProductRepository, ProductRepository>();
 
+            // registrar el repo generico e implementación genérica
+            services.AddScoped(typeof (IRepository<>), typeof(BaseRepository<>));
+
+            // Registrar Unidad de trabajo para unificar repositorios
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
+
             // aplicar el filtro a nivel de toda la app y registrando validadores para ProductoDto
             services.AddMvc(options =>
             {
@@ -69,6 +82,10 @@ namespace ArandaSoftTest.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors(options => 
+                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+            );
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -83,6 +100,13 @@ namespace ArandaSoftTest.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            // TODO: Configuración de subida de imágenes
+            app.UseStaticFiles(new StaticFileOptions {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "images")),
+                    RequestPath="/images"
             });
         }
     }

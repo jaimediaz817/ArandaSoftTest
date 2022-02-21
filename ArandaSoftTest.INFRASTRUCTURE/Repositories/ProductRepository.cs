@@ -1,5 +1,6 @@
 ﻿using ArandaSoftTest.CORE.Entities;
 using ArandaSoftTest.CORE.Interfaces;
+using ArandaSoftTest.CORE.QueryFilters;
 using ArandaSoftTest.INFRASTRUCTURE.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,13 +13,42 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
 {
     public class ProductRepository : IProductRepository
     {
-        private PruebaArandaSoftContext _context;
+        private PruebaArandaSoftContext _context;        
 
         public ProductRepository(PruebaArandaSoftContext context)
         {
             _context = context;
         }
 
+
+        public async Task<IEnumerable<Product>> GetProducts(ProductQueryFilter filters)
+        {
+
+            var products = await _context.Product.Include(p => p.Category).ToListAsync();
+
+            if (filters.CategoryId != null)
+            {
+                products = (List<Product>)products.Where(p => p.CategoryId == filters.CategoryId);
+            }
+
+            //var products = await _context.Product.OrderByDescending(x => x.Name).ToListAsync();
+            /*var products = await
+                (
+                    from categorias in _context.Category
+                    join productos in _context.Product
+                    on categorias.Id equals productos.CategoryId
+                    select new
+                    {
+                        Id = productos.Id,
+                        Name = productos.Name,
+                        Description = productos.Description,
+                        Image = productos.Image,
+                        Category = categorias
+                    }
+                ).ToListAsync();*/
+
+            return products;
+        }
 
         public async Task<Product> GetProductById(int id)
         {
@@ -39,11 +69,6 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
             return post;
         }*/
 
-        public async Task<IEnumerable<Product>> GetProducts()
-        {
-            var products = await _context.Product.OrderByDescending(x => x.Name).ToListAsync();
-            return products;
-        }
 
         public async Task InsertProduct(Product product)
         {
@@ -86,6 +111,12 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
         public async Task<IEnumerable<Product>> GetProductByDescription(string description)
         {
             return await _context.Product.Where(x => x.Description == description).ToListAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetCategories()
+        {
+            var categories = await _context.Category.OrderByDescending(x => x.Name).ToListAsync();
+            return categories;
         }
     }
 }

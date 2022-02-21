@@ -1,5 +1,6 @@
 ﻿using ArandaSoftTest.CORE.Entities;
 using ArandaSoftTest.CORE.Interfaces;
+using ArandaSoftTest.CORE.QueryFilters;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +14,14 @@ namespace ArandaSoftTest.CORE.Services
         public ProductService(IProductRepository productRepository)
         {
             _productRepository = productRepository;
+        }
+
+        // operaciones
+        public async Task<IEnumerable<Product>> GetProducts(ProductQueryFilter filters)
+        {
+            var products = _productRepository.GetProducts(filters);
+
+            return await products;
         }
 
         public async Task<bool> DeleteProduct(int id)
@@ -40,11 +49,6 @@ namespace ArandaSoftTest.CORE.Services
             return await _productRepository.GetProductByDescription(description);
         }
 
-        public async Task<IEnumerable<Product>> GetProducts()
-        {
-            return await _productRepository.GetProducts();
-        }
-
         public async Task InsertProduct(Product product)
         {
             var category = await _productRepository.GetCategoryById((int)product.CategoryId);
@@ -61,6 +65,11 @@ namespace ArandaSoftTest.CORE.Services
         public async Task<bool> UpdateProduct(Product product)
         {
             return await _productRepository.UpdateProduct(product);
+        }
+
+        public async Task<IEnumerable<Category>> GetCategories()
+        {
+            return await _productRepository.GetCategories();
         }
     }
 }
