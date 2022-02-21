@@ -20,7 +20,7 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
             _context = context;
         }
 
-
+        // TODO: no funcionan los filtros requeridos en la prueba, comentar de momento y evaluar contra el patrón UnitOfWork para unificar Repositorios en una unidad de trabajo
         public async Task<IEnumerable<Product>> GetProducts(ProductQueryFilter filters)
         {
 
@@ -28,24 +28,18 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
 
             if (filters.CategoryId != null)
             {
-                products = (List<Product>)products.Where(p => p.CategoryId == filters.CategoryId);
+                //products = (List<Product>)products.Where(p => p.CategoryId == filters.CategoryId);
             }
 
-            //var products = await _context.Product.OrderByDescending(x => x.Name).ToListAsync();
-            /*var products = await
-                (
-                    from categorias in _context.Category
-                    join productos in _context.Product
-                    on categorias.Id equals productos.CategoryId
-                    select new
-                    {
-                        Id = productos.Id,
-                        Name = productos.Name,
-                        Description = productos.Description,
-                        Image = productos.Image,
-                        Category = categorias
-                    }
-                ).ToListAsync();*/
+            if (filters.Name != null)
+            {
+                //products = (List<Product>)products.Where(p => p.Name.ToLower().Contains(filters.Name.ToLower()));
+            }
+
+            if (filters.Description != null)
+            {
+                //products = (List<Product>)products.Where(p => p.Description.ToLower().Contains(filters.Description.ToLower()));
+            }
 
             return products;
         }
