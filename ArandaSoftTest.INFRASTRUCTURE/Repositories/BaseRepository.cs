@@ -4,6 +4,7 @@ using ArandaSoftTest.INFRASTRUCTURE.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,9 +22,10 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
             _entities = context.Set<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAll()
+        // permitir realizar filtros antes de ...
+        public IEnumerable<T> GetAll()
         {
-            return await _entities.ToListAsync();
+            return _entities.AsEnumerable();
         }
 
         public async Task<T> GetById(int id)

@@ -7,19 +7,17 @@ using AutoMapper;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
+using ArandaSoftTest.INFRASTRUCTURE.Interfaces;
+using Microsoft.AspNetCore.Http;
+using ArandaSoftTest.INFRASTRUCTURE.Services;
+using ArandaSoftTest.CORE.CustomEntities;
 
 namespace ArandaSoftTest.API
 {
@@ -47,22 +45,34 @@ namespace ArandaSoftTest.API
             services.AddControllers().AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                // NO MOSTRAR OBJETOS NULOS al intentar serializar: Ignore
+                options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Include;
             })
             .ConfigureApiBehaviorOptions(options => {
                 options.SuppressModelStateInvalidFilter = true;
             });
 
             // TODO: configurar que se desactiven por defecto los filtros para validar los requests
-            
+
+            // Trayendo del fichero de configuración appsettings.json la clave Pagination
+            services.Configure<PaginationOptions>(Configuration.GetSection("Pagination"));
 
             // TODO: registrar cadena de conexión
             services.AddDbContext<PruebaArandaSoftContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("PruebaArandaSoft"))
             );
 
-            // TODO: INYECCIÓN DE DEPENDENCIAS
+            // TODO: INYECCIÓN DE DEPENDENCIAS ::: C O N T R O L L E R S 
             services.AddTransient<IProductService, ProductService>();
             services.AddTransient<IProductRepository, ProductRepository>();
+            // por cada solicitud no se requiere una instancia
+            services.AddSingleton<IUriService>(provider => 
+            {
+                var accesor = provider.GetRequiredService<IHttpContextAccessor>();
+                var request = accesor.HttpContext.Request;
+                var absoluteUri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+                return new UriService(absoluteUri);
+            }); 
 
             // registrar el repo generico e implementación genérica
             services.AddScoped(typeof (IRepository<>), typeof(BaseRepository<>));

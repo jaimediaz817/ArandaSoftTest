@@ -8,7 +8,7 @@ namespace ArandaSoftTest.CORE.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
-        IRepository<Product> ProductRepository { get; }
+        IProductRepository ProductRepository { get; }
         IRepository<Category> CategoryRepository { get; }
 
         void SaveShanges();

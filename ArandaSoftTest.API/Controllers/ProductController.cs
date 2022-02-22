@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using ArandaSoftTest.CORE.QueryFilters;
+using Newtonsoft.Json;
+using ArandaSoftTest.CORE.CustomEntities;
+using ArandaSoftTest.INFRASTRUCTURE.Interfaces;
 
 namespace ArandaSoftTest.API.Controllers
 {
@@ -21,39 +24,53 @@ namespace ArandaSoftTest.API.Controllers
     {
         // Repositorio de productos a través de la interfaz
         private readonly IProductService _productService;
-
         // Obteniendo el mapper
         private readonly IMapper _mapper;
-
         private readonly IWebHostEnvironment _env;
+        private readonly IUriService _uriService;
 
         /* 
          * Inyección de dependencias
          */
-        public ProductController(IProductService productService, IMapper mapper, IWebHostEnvironment env)
+        public ProductController(
+            IProductService productService, 
+            IMapper mapper, 
+            IWebHostEnvironment env,
+            IUriService uriService
+        )
         {
             _productService = productService;
             _mapper = mapper;
             _env = env;
+            _uriService = uriService;
         }
 
-        [HttpGet]
+        [HttpGet(Name = nameof(GetProduct))]
         public async Task<IActionResult> GetProduct([FromQuery]ProductQueryFilter filters)
         {
-            var products = await _productService.GetProducts(filters);
+            var products =  _productService.GetProducts(filters);
             var productsDto = _mapper.Map<IEnumerable<ProductDto>>(products);
 
-            var response = new ApiResponse<IEnumerable<ProductDto>>(productsDto);
-
-            /*var productsDto2 = products.Select(p => new ProductDto
+            var metadata = new MetaData
             {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                Image = p.Image,
-                CategoryId = p.CategoryId,
-                category = p.Category
-            });*/
+                TotalCount = products.TotalCount,
+                PageSize = products.PageSize,
+                CurrentPage = products.CurrentPage,
+                TotalPages = products.TotalPages,
+                HasNextPage = products.HasNextPage,
+                HasPreviusPage = products.HasPreviusPage,
+                NextPageNumber = products.NextPageNumber,
+                PreviusPageNumber = products.PreviusPageNumber,
+                NextPageUrl = _uriService.GetProductPaginationUri(filters, Url.RouteUrl(nameof(GetProduct))).ToString(),
+                PreviusPageUrl = ""
+            };
+
+            var response = new ApiResponse<IEnumerable<ProductDto>>(productsDto)
+            {
+                Meta = metadata
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
 
             return Ok(response);
         }
@@ -63,18 +80,18 @@ namespace ArandaSoftTest.API.Controllers
         [Route("api/Product/getCategories")]
         public async Task<IActionResult> GetCategories()
         {
-            var categories= await _productService.GetCategories();
+            var categories=  _productService.GetCategories();
 
             var response = new ApiResponse<IEnumerable<Category>>(categories);
             return Ok(response);
         }
 
-        [HttpGet("{name}")]
+        [HttpGet]
         [Route("[action]")]
-        [Route("api/Product/getProductByName")]
-        public async Task<IActionResult> GetProductByName(string name)
+        [Route("api/Product/productByCategoryId")]
+        public async Task<IActionResult> ProductByCategoryId(int id)
         {
-            var products = await _productService.GetProductByName(name);
+            var products = await _productService.GetProductsByCategoryId(id);
             var productsDto = _mapper.Map<IEnumerable<ProductDto>>(products);
 
             var response = new ApiResponse<IEnumerable<ProductDto>>(productsDto);
@@ -90,8 +107,10 @@ namespace ArandaSoftTest.API.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProduct(int id)
+        [HttpGet]
+        [Route("[action]")]
+        [Route("api/Product/productById")]
+        public async Task<IActionResult> ProductById(int id)
         {
             var product = await _productService.GetProductById(id);
             var productDto = _mapper.Map<ProductDto>(product);
