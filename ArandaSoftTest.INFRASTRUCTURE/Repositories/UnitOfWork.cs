@@ -11,7 +11,7 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
     public class UnitOfWork : IUnitOfWork
     {
         private PruebaArandaSoftContext _context;
-        private readonly IRepository<Product> _productRepository;
+        private readonly IProductRepository _productRepository;
         private readonly IRepository<Category> _categoryRepository;
 
         public UnitOfWork(PruebaArandaSoftContext context)
@@ -19,7 +19,7 @@ namespace ArandaSoftTest.INFRASTRUCTURE.Repositories
             _context = context;
         }
 
-        public IRepository<Product> ProductRepository => _productRepository ?? new BaseRepository<Product>(_context);
+        public IProductRepository ProductRepository => _productRepository ?? new ProductRepository(_context);
 
         public IRepository<Category> CategoryRepository => _categoryRepository ?? new BaseRepository<Category>(_context);
 
